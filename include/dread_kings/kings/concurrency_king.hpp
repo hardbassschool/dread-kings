@@ -1,13 +1,13 @@
 #pragma once
 
-#include "dreadlords/core/dread_core.hpp"
+#include "dread_kings/core/dread_core.hpp"
 
 namespace dread::concurrency {
 
-class DreadConcurrencyLord final : public core::DreadLord {
+class DreadConcurrencyKing final : public core::DreadKing {
 public:
   [[nodiscard]] std::string_view name() const noexcept override {
-    return "DreadConcurrencyLord";
+    return "DreadConcurrencyKing";
   }
 
   [[nodiscard]] std::string_view specialization() const noexcept override {

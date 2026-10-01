@@ -1,4 +1,4 @@
-#include "dreadlords/verification/verification.hpp"
+#include "dread_kings/verification/verification.hpp"
 #include <sstream>
 namespace dread::verification {
 Report verify(const discovery::Evaluation& e, const discovery::Objective&) {

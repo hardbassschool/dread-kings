@@ -1,4 +1,4 @@
-#include "dreadlords/discovery/search.hpp"
+#include "dread_kings/discovery/search.hpp"
 #include <algorithm>
 
 namespace dread::discovery {
