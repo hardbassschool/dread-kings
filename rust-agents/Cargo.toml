@@ -1,0 +1,10 @@
+[package]
+name = "dread-rust-agents"
+version = "0.1.0"
+edition = "2021"
+description = "A concurrent Rust agent council for the Dread Lords source-analysis engine"
+
+[dependencies]
+anyhow = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync"] }
