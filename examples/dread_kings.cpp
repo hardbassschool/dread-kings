@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
   discovery::Objective objective{20,1.0,5.0,100};
   discovery::SearchConfig cfg{50000,10,1234567};
   const auto result=discovery::random_search(space,objective,cfg);
-  std::cout << "DREAD LORDS v3\n";
+  std::cout << "DREAD KINGS v3\n";
   std::cout << "Compiler: " << toolchain::probe().version << "\n";
   std::cout << "Candidates evaluated: " << result.all.size() << "\n";
   std::cout << "Feasible candidates retained: " << result.feasible.size() << "\n\n";
