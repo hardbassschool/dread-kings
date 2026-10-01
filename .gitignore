@@ -1,5 +1,15 @@
 build/
 build-review/
+/cmake-build-*/
+/CMakeFiles/
+/CMakeCache.txt
+/target/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
 .vs/
 *.user
 *.suo
