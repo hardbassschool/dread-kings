@@ -46,7 +46,8 @@ instructions.
 - `src/robotics/` and `include/dread_kings/robotics/`: robot model and SDF generation.
 - `src/verification/` and `include/dread_kings/verification/`: feasibility contract and source-level concurrency checks.
 - `src/toolchain/` and `include/dread_kings/toolchain/`: compiler probing, invocation, and source rewrite utilities.
-- `core/`: shared Dread King, Dread Kings runner, problem-context, and verdict contracts.
+- `src/core/` and `include/dread_kings/core/`: Dread Kings runner,
+  problem-context, and verdict contracts.
 - `include/dread_kings/compiler/`: compiler checks and surgical source rewrite utilities.
 - `include/dread_kings/kings/`: specialized source analyzers.
 - `rust-kings/`: async, concurrent Rust source-analysis companion crate.

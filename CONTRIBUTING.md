@@ -28,11 +28,10 @@ file:
 ```
 
 The companion Rust crate lives in `rust-kings/`. From that directory, run its
-format, lint, and test checks and try its source-analysis CLI:
+lint and test checks and try its source-analysis CLI:
 
 ```bash
 cd rust-kings
-cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test
 cargo run -- ../examples/dread_kings.cpp
