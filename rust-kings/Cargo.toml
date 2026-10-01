@@ -1,8 +1,8 @@
 [package]
-name = "dread-rust-agents"
+name = "dread-kings-rust"
 version = "0.1.0"
 edition = "2021"
-description = "A concurrent Rust agent council for the Dread Lords source-analysis engine"
+description = "A concurrent Rust Dread Kings source-analysis engine"
 
 [dependencies]
 anyhow = "1"

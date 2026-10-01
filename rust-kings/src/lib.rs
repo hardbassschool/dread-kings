@@ -28,117 +28,117 @@ pub struct Finding {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct AgentReport {
-    pub agent: String,
+pub struct KingReport {
+    pub king: String,
     pub findings: Vec<Finding>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct AgentEvent {
-    pub agent: String,
+pub struct KingEvent {
+    pub king: String,
     pub finding_count: usize,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct RunMetrics {
     pub runs: u64,
-    pub agents_completed: u64,
+    pub kings_completed: u64,
     pub findings: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RunSummary {
-    pub reports: Vec<AgentReport>,
-    pub completion_events: Vec<AgentEvent>,
+    pub reports: Vec<KingReport>,
+    pub completion_events: Vec<KingEvent>,
     pub metrics: RunMetrics,
 }
 
 #[derive(Debug, Error)]
-pub enum AgentError {
-    #[error("agent `{agent}` failed: {message}")]
-    AgentFailure {
-        agent: &'static str,
+pub enum KingError {
+    #[error("king `{king}` failed: {message}")]
+    KingFailure {
+        king: &'static str,
         message: String,
     },
-    #[error("agent `{0}` is already registered")]
-    DuplicateAgent(&'static str),
-    #[error("agent registry lock is poisoned")]
+    #[error("king `{0}` is already registered")]
+    DuplicateKing(&'static str),
+    #[error("king registry lock is poisoned")]
     RegistryPoisoned,
     #[error("run metrics lock is poisoned")]
     MetricsPoisoned,
-    #[error("agent task failed: {0}")]
+    #[error("king task failed: {0}")]
     Join(#[from] tokio::task::JoinError),
-    #[error("multiple agents failed ({})", .0.len())]
-    Multiple(Vec<AgentError>),
+    #[error("multiple kings failed ({})", .0.len())]
+    Multiple(Vec<KingError>),
 }
 
-pub trait Agent: Send + Sync + 'static {
+pub trait DreadKing: Send + Sync + 'static {
     fn name(&self) -> &'static str;
-    fn analyze(&self, context: Arc<ProblemContext>) -> Result<AgentReport, AgentError>;
+    fn analyze(&self, context: Arc<ProblemContext>) -> Result<KingReport, KingError>;
 }
 
 #[derive(Default)]
 struct Registry {
-    agents: Vec<Arc<dyn Agent>>,
+    kings: Vec<Arc<dyn DreadKing>>,
     names: HashSet<&'static str>,
 }
 
 #[derive(Default)]
-pub struct Council {
+pub struct DreadKings {
     registry: RwLock<Registry>,
     metrics: Mutex<RunMetrics>,
 }
 
-impl Council {
+impl DreadKings {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn register_agent<A: Agent>(&self, agent: A) -> Result<(), AgentError> {
-        self.register_boxed(Box::new(agent))
+    pub fn register_king<A: DreadKing>(&self, king: A) -> Result<(), KingError> {
+        self.register_boxed_king(Box::new(king))
     }
 
-    pub fn register_boxed(&self, agent: Box<dyn Agent>) -> Result<(), AgentError> {
-        let name = agent.name();
+    pub fn register_boxed_king(&self, king: Box<dyn DreadKing>) -> Result<(), KingError> {
+        let name = king.name();
         let mut registry = self
             .registry
             .write()
-            .map_err(|_| AgentError::RegistryPoisoned)?;
+            .map_err(|_| KingError::RegistryPoisoned)?;
         if !registry.names.insert(name) {
-            return Err(AgentError::DuplicateAgent(name));
+            return Err(KingError::DuplicateKing(name));
         }
-        let shared_agent: Arc<dyn Agent> = Arc::from(agent);
-        registry.agents.push(shared_agent);
+        let shared_king: Arc<dyn DreadKing> = Arc::from(king);
+        registry.kings.push(shared_king);
         Ok(())
     }
 
-    pub fn metrics(&self) -> Result<RunMetrics, AgentError> {
+    pub fn metrics(&self) -> Result<RunMetrics, KingError> {
         self.metrics
             .lock()
             .map(|metrics| metrics.clone())
-            .map_err(|_| AgentError::MetricsPoisoned)
+            .map_err(|_| KingError::MetricsPoisoned)
     }
 
-    pub async fn run(&self, context: Arc<ProblemContext>) -> Result<RunSummary, AgentError> {
-        let agents = self
+    pub async fn run(&self, context: Arc<ProblemContext>) -> Result<RunSummary, KingError> {
+        let kings = self
             .registry
             .read()
-            .map_err(|_| AgentError::RegistryPoisoned)?
-            .agents
+            .map_err(|_| KingError::RegistryPoisoned)?
+            .kings
             .clone();
 
         let (event_tx, mut event_rx) = mpsc::unbounded_channel();
         let mut tasks = JoinSet::new();
-        for agent in agents {
+        for king in kings {
             let context = Arc::clone(&context);
             let event_tx = event_tx.clone();
             tasks.spawn_blocking(move || {
-                let report = agent.analyze(context)?;
-                let _ = event_tx.send(AgentEvent {
-                    agent: report.agent.clone(),
+                let report = king.analyze(context)?;
+                let _ = event_tx.send(KingEvent {
+                    king: report.king.clone(),
                     finding_count: report.findings.len(),
                 });
-                Ok::<AgentReport, AgentError>(report)
+                Ok::<KingReport, KingError>(report)
             });
         }
         drop(event_tx);
@@ -149,7 +149,7 @@ impl Council {
             match result {
                 Ok(Ok(report)) => reports.push(report),
                 Ok(Err(error)) => failures.push(error),
-                Err(error) => failures.push(AgentError::Join(error)),
+                Err(error) => failures.push(KingError::Join(error)),
             }
         }
 
@@ -157,8 +157,8 @@ impl Council {
         while let Ok(event) = event_rx.try_recv() {
             completion_events.push(event);
         }
-        reports.sort_by(|left, right| left.agent.cmp(&right.agent));
-        completion_events.sort_by(|left, right| left.agent.cmp(&right.agent));
+        reports.sort_by(|left, right| left.king.cmp(&right.king));
+        completion_events.sort_by(|left, right| left.king.cmp(&right.king));
 
         let findings: u64 = reports
             .iter()
@@ -168,9 +168,9 @@ impl Council {
             let mut metrics = self
                 .metrics
                 .lock()
-                .map_err(|_| AgentError::MetricsPoisoned)?;
+                .map_err(|_| KingError::MetricsPoisoned)?;
             metrics.runs += 1;
-            metrics.agents_completed += reports.len() as u64;
+            metrics.kings_completed += reports.len() as u64;
             metrics.findings += findings;
             metrics.clone()
         };
@@ -179,7 +179,7 @@ impl Council {
             return Err(if failures.len() == 1 {
                 failures.remove(0)
             } else {
-                AgentError::Multiple(failures)
+                KingError::Multiple(failures)
             });
         }
 
@@ -192,14 +192,14 @@ impl Council {
 }
 
 #[derive(Default)]
-pub struct RelaxedAtomicAgent;
+pub struct RelaxedAtomicKing;
 
-impl Agent for RelaxedAtomicAgent {
+impl DreadKing for RelaxedAtomicKing {
     fn name(&self) -> &'static str {
-        "relaxed-atomic-check"
+        "relaxed-atomic-king-check"
     }
 
-    fn analyze(&self, context: Arc<ProblemContext>) -> Result<AgentReport, AgentError> {
+    fn analyze(&self, context: Arc<ProblemContext>) -> Result<KingReport, KingError> {
         let has_threads =
             context.source.contains("std::thread") || context.source.contains("std::jthread");
         let findings = context
@@ -216,22 +216,22 @@ impl Agent for RelaxedAtomicAgent {
             })
             .collect();
 
-        Ok(AgentReport {
-            agent: self.name().to_owned(),
+        Ok(KingReport {
+            king: self.name().to_owned(),
             findings,
         })
     }
 }
 
 #[derive(Default)]
-pub struct TodoMarkerAgent;
+pub struct TodoMarkerKing;
 
-impl Agent for TodoMarkerAgent {
+impl DreadKing for TodoMarkerKing {
     fn name(&self) -> &'static str {
-        "todo-marker-check"
+        "todo-marker-king-check"
     }
 
-    fn analyze(&self, context: Arc<ProblemContext>) -> Result<AgentReport, AgentError> {
+    fn analyze(&self, context: Arc<ProblemContext>) -> Result<KingReport, KingError> {
         let findings = context
             .source
             .lines()
@@ -244,8 +244,8 @@ impl Agent for TodoMarkerAgent {
             })
             .collect();
 
-        Ok(AgentReport {
-            agent: self.name().to_owned(),
+        Ok(KingReport {
+            king: self.name().to_owned(),
             findings,
         })
     }
@@ -257,9 +257,9 @@ mod tests {
     use std::sync::Barrier;
 
     #[test]
-    fn relaxed_atomic_agent_reports_only_threaded_relaxed_stores() {
+    fn relaxed_atomic_king_reports_only_threaded_relaxed_stores() {
         let source = "std::thread worker;\nready.store(true, std::memory_order_relaxed);";
-        let report = RelaxedAtomicAgent
+        let report = RelaxedAtomicKing
             .analyze(Arc::new(ProblemContext::new("sample.cpp", source)))
             .expect("analysis succeeds");
 
@@ -267,7 +267,7 @@ mod tests {
         assert_eq!(report.findings[0].line, Some(2));
 
         let no_thread_source = "ready.store(true, std::memory_order_relaxed);";
-        let clean_report = RelaxedAtomicAgent
+        let clean_report = RelaxedAtomicKing
             .analyze(Arc::new(ProblemContext::new(
                 "sample.cpp",
                 no_thread_source,
@@ -277,96 +277,96 @@ mod tests {
     }
 
     #[test]
-    fn duplicate_agent_names_are_rejected() {
-        let council = Council::new();
-        council
-            .register_agent(TodoMarkerAgent)
+    fn duplicate_king_names_are_rejected() {
+        let dread_kings = DreadKings::new();
+        dread_kings
+            .register_king(TodoMarkerKing)
             .expect("first registration");
 
         assert!(matches!(
-            council.register_agent(TodoMarkerAgent),
-            Err(AgentError::DuplicateAgent("todo-marker-check"))
+            dread_kings.register_king(TodoMarkerKing),
+            Err(KingError::DuplicateKing("todo-marker-king-check"))
         ));
     }
 
-    struct BarrierAgent {
+    struct BarrierKing {
         name: &'static str,
         barrier: Arc<Barrier>,
     }
 
-    impl Agent for BarrierAgent {
+    impl DreadKing for BarrierKing {
         fn name(&self) -> &'static str {
             self.name
         }
 
-        fn analyze(&self, _context: Arc<ProblemContext>) -> Result<AgentReport, AgentError> {
+        fn analyze(&self, _context: Arc<ProblemContext>) -> Result<KingReport, KingError> {
             self.barrier.wait();
-            Ok(AgentReport {
-                agent: self.name.to_owned(),
+            Ok(KingReport {
+                king: self.name.to_owned(),
                 findings: Vec::new(),
             })
         }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-    async fn council_runs_agents_concurrently_and_tracks_metrics_and_events() {
-        let council = Council::new();
+    async fn dread_kings_runs_kings_concurrently_and_tracks_metrics_and_events() {
+        let dread_kings = DreadKings::new();
         let barrier = Arc::new(Barrier::new(2));
-        council
-            .register_agent(BarrierAgent {
+        dread_kings
+            .register_king(BarrierKing {
                 name: "first",
                 barrier: Arc::clone(&barrier),
             })
-            .expect("register first agent");
-        council
-            .register_agent(BarrierAgent {
+            .expect("register first king");
+        dread_kings
+            .register_king(BarrierKing {
                 name: "second",
                 barrier,
             })
-            .expect("register second agent");
+            .expect("register second king");
 
-        let summary = council
+        let summary = dread_kings
             .run(Arc::new(ProblemContext::new("sample.cpp", "")))
             .await
-            .expect("council run succeeds");
+            .expect("dread_kings run succeeds");
 
         assert_eq!(summary.reports.len(), 2);
         assert_eq!(summary.completion_events.len(), 2);
         assert_eq!(summary.metrics.runs, 1);
-        assert_eq!(summary.metrics.agents_completed, 2);
-        assert_eq!(council.metrics().expect("metrics lock"), summary.metrics);
+        assert_eq!(summary.metrics.kings_completed, 2);
+        assert_eq!(dread_kings.metrics().expect("metrics lock"), summary.metrics);
     }
 
-    struct FailingAgent(&'static str);
+    struct FailingKing(&'static str);
 
-    impl Agent for FailingAgent {
+    impl DreadKing for FailingKing {
         fn name(&self) -> &'static str {
             self.0
         }
 
-        fn analyze(&self, _context: Arc<ProblemContext>) -> Result<AgentReport, AgentError> {
-            Err(AgentError::AgentFailure {
-                agent: self.0,
+        fn analyze(&self, _context: Arc<ProblemContext>) -> Result<KingReport, KingError> {
+            Err(KingError::KingFailure {
+                king: self.0,
                 message: "test failure".to_owned(),
             })
         }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-    async fn council_collects_errors_from_all_agents() {
-        let council = Council::new();
-        council
-            .register_agent(FailingAgent("first"))
+    async fn dread_kings_collects_errors_from_all_kings() {
+        let dread_kings = DreadKings::new();
+        dread_kings
+            .register_king(FailingKing("first"))
             .expect("register first");
-        council
-            .register_agent(FailingAgent("second"))
+        dread_kings
+            .register_king(FailingKing("second"))
             .expect("register second");
 
-        let result = council
+        let result = dread_kings
             .run(Arc::new(ProblemContext::new("sample.cpp", "")))
             .await;
 
-        assert!(matches!(result, Err(AgentError::Multiple(errors)) if errors.len() == 2));
-        assert_eq!(council.metrics().expect("metrics lock").runs, 1);
+        assert!(matches!(result, Err(KingError::Multiple(errors)) if errors.len() == 2));
+        assert_eq!(dread_kings.metrics().expect("metrics lock").runs, 1);
     }
 }

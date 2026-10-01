@@ -1,4 +1,4 @@
-#include "dreadlords/core/dread_core.hpp"
+#include "dread_kings/core/dread_core.hpp"
 
 #include <chrono>
 #include <future>
@@ -8,15 +8,15 @@ namespace dread::core {
 namespace {
 
 struct AsyncResult {
-  std::string lord_name;
+  std::string king_name;
   std::expected<VerificationVerdict, std::string> verdict;
 };
 
-class AsyncDreadCouncil final : public DreadCouncil {
+class AsyncDreadKings final : public DreadKings {
 public:
-  void register_lord(std::unique_ptr<DreadLord> lord) override {
-    if (lord) {
-      lords_.push_back(std::move(lord));
+  void register_king(std::unique_ptr<DreadKing> king) override {
+    if (king) {
+      kings_.push_back(std::move(king));
     }
   }
 
@@ -24,15 +24,15 @@ public:
       const ProblemContext& context) override {
     const auto start = std::chrono::steady_clock::now();
     std::vector<std::future<AsyncResult>> futures;
-    futures.reserve(lords_.size());
+    futures.reserve(kings_.size());
 
-    for (const auto& lord : lords_) {
-      DreadLord* lord_ptr = lord.get();
+    for (const auto& king : kings_) {
+      DreadKing* king_ptr = king.get();
       futures.push_back(std::async(std::launch::async,
-                                   [lord_ptr, &context]() {
+                                   [king_ptr, &context]() {
                                      return AsyncResult{
-                                         std::string(lord_ptr->name()),
-                                         lord_ptr->analyze(context)};
+                                         std::string(king_ptr->name()),
+                                         king_ptr->analyze(context)};
                                    }));
     }
 
@@ -45,9 +45,9 @@ public:
       if (!result.verdict) {
         combined.passed = false;
         combined.violations.push_back({
-            .rule_id = "COUNCIL-INTERNAL-ERROR",
+            .rule_id = "DREAD-KINGS-INTERNAL-ERROR",
             .severity = ViolationSeverity::CompilationFailure,
-            .message = "Lord '" + result.lord_name + "' failed: " +
+            .message = "Dread King '" + result.king_name + "' failed: " +
                        result.verdict.error(),
             .file_path = context.context_id});
       } else if (!result.verdict->passed) {
@@ -64,10 +64,10 @@ public:
         std::chrono::steady_clock::now() - start);
     std::ostringstream assessment;
     if (combined.passed) {
-      assessment << "VERIFIED: All " << lords_.size() << " Lords passed.";
+      assessment << "VERIFIED: All " << kings_.size() << " Dread Kings passed.";
     } else {
-      assessment << "REJECTED: " << (lords_.size() - pass_count) << "/"
-                 << lords_.size() << " Lords flagged defects. Total violations: "
+      assessment << "REJECTED: " << (kings_.size() - pass_count) << "/"
+                 << kings_.size() << " Dread Kings flagged defects. Total violations: "
                  << combined.violations.size() << ".";
     }
     combined.final_assessment = assessment.str();
@@ -75,13 +75,13 @@ public:
   }
 
 private:
-  std::vector<std::unique_ptr<DreadLord>> lords_;
+  std::vector<std::unique_ptr<DreadKing>> kings_;
 };
 
 }  // namespace
 
-std::unique_ptr<DreadCouncil> create_dread_council() {
-  return std::make_unique<AsyncDreadCouncil>();
+std::unique_ptr<DreadKings> create_dread_kings() {
+  return std::make_unique<AsyncDreadKings>();
 }
 
 }  // namespace dread::core

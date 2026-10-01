@@ -1,5 +1,5 @@
 #pragma once
-#include "dreadlords/discovery/design_vector.hpp"
+#include "dread_kings/discovery/design_vector.hpp"
 #include <cstddef>
 #include <vector>
 

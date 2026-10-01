@@ -1,4 +1,4 @@
-#include "dreadlords/compiler/clang_rewriter.hpp"
+#include "dread_kings/compiler/clang_rewriter.hpp"
 
 #include <algorithm>
 #include <sstream>

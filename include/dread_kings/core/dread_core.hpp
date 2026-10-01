@@ -86,23 +86,23 @@ struct ProblemContext {
   CppStandard requested_standard{CppStandard::Cpp23};
 };
 
-class DreadLord {
+class DreadKing {
 public:
-  virtual ~DreadLord() = default;
+  virtual ~DreadKing() = default;
   virtual std::string_view name() const noexcept = 0;
   virtual std::string_view specialization() const noexcept = 0;
   virtual std::expected<VerificationVerdict, std::string> analyze(
       const ProblemContext& context) = 0;
 };
 
-class DreadCouncil {
+class DreadKings {
 public:
-  virtual ~DreadCouncil() = default;
-  virtual void register_lord(std::unique_ptr<DreadLord> lord) = 0;
+  virtual ~DreadKings() = default;
+  virtual void register_king(std::unique_ptr<DreadKing> king) = 0;
   [[nodiscard]] virtual VerificationVerdict evaluate_all(
       const ProblemContext& context) = 0;
 };
 
-[[nodiscard]] std::unique_ptr<DreadCouncil> create_dread_council();
+[[nodiscard]] std::unique_ptr<DreadKings> create_dread_kings();
 
 }  // namespace dread::core

@@ -1,10 +1,10 @@
-#include "dreadlords/discovery/search.hpp"
-#include "dreadlords/compiler/compiler_pipeline.hpp"
-#include "dreadlords/core/dread_core.hpp"
-#include "dreadlords/lords/concurrency_lord.hpp"
-#include "dreadlords/robotics/robot_model.hpp"
-#include "dreadlords/toolchain/toolchain.hpp"
-#include "dreadlords/verification/verification.hpp"
+#include "dread_kings/discovery/search.hpp"
+#include "dread_kings/compiler/compiler_pipeline.hpp"
+#include "dread_kings/core/dread_core.hpp"
+#include "dread_kings/kings/concurrency_king.hpp"
+#include "dread_kings/robotics/robot_model.hpp"
+#include "dread_kings/toolchain/toolchain.hpp"
+#include "dread_kings/verification/verification.hpp"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -25,10 +25,10 @@ int verify_file(const char* file_path, dread::core::CppStandard standard) {
       .context_id = file_path,
       .raw_source_code = source.str(),
       .requested_standard = standard};
-  auto council = dread::core::create_dread_council();
-  council->register_lord(
-      std::make_unique<dread::concurrency::DreadConcurrencyLord>());
-  const auto verdict = council->evaluate_all(context);
+  auto dread_kings = dread::core::create_dread_kings();
+  dread_kings->register_king(
+      std::make_unique<dread::concurrency::DreadConcurrencyKing>());
+  const auto verdict = dread_kings->evaluate_all(context);
 
   std::cout << "Verification: " << (verdict.passed ? "PASS" : "REJECTED")
             << "\n" << verdict.final_assessment << '\n';
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
   discovery::Objective objective{20,1.0,5.0,100};
   discovery::SearchConfig cfg{50000,10,1234567};
   const auto result=discovery::random_search(space,objective,cfg);
-  std::cout << "DREAD LORDS v3\n";
+  std::cout << "DREAD KINGS v3\n";
   std::cout << "Compiler: " << toolchain::probe().version << "\n";
   std::cout << "Candidates evaluated: " << result.all.size() << "\n";
   std::cout << "Feasible candidates retained: " << result.feasible.size() << "\n\n";

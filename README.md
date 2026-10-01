@@ -1,6 +1,6 @@
-# Dread Lords v3 — C++ Engineering & Robotics Discovery Engine
+# Dread Kings v3 — C++ Engineering & Robotics Discovery Engine
 
-This is a functional C++23 baseline for Dread Lords. It does not claim that generated candidates are physically validated inventions; it performs computational design-space search, evaluates declared constraints, verifies the computational contract, and emits a robot-model artifact.
+This is a functional C++23 baseline for Dread Kings. It does not claim that generated candidates are physically validated inventions; it performs computational design-space search, evaluates declared constraints, verifies the computational contract, and emits a robot-model artifact.
 
 ## Build
 
@@ -8,7 +8,7 @@ This is a functional C++23 baseline for Dread Lords. It does not claim that gene
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ctest --test-dir build --output-on-failure
-./build/dreadctl
+./build/dread-kings
 ```
 
 ## Architecture
@@ -17,53 +17,53 @@ ctest --test-dir build --output-on-failure
 - `robotics/`: robot model and SDF generation.
 - `verification/`: explicit feasibility contract.
 - `toolchain/`: compiler probing.
-- `core/`: shared Lord, council, problem-context, and verdict contracts.
+- `core/`: shared Dread King, Dread Kings runner, problem-context, and verdict contracts.
 - `compiler/`: compiler checks and surgical source rewrite utilities.
-- `lords/`: specialized source analyzers, including concurrency checks.
+- `kings/`: specialized source analyzers, including concurrency checks.
 - `knowledge/cppreference/`: reference-layer policy and entry points.
 
-## Council pipeline
+## Dread Kings pipeline
 
-The first Dread Kings 2.0 slice is available through `core::create_dread_council()`.
-Register `core::DreadLord` implementations, then submit a `core::ProblemContext`:
+The first Dread Kings 2.0 slice is available through `core::create_dread_kings()`.
+Register `core::DreadKing` implementations, then submit a `core::ProblemContext`:
 
 ```cpp
-auto council = dread::core::create_dread_council();
-council->register_lord(
-	std::make_unique<dread::concurrency::DreadConcurrencyLord>());
+auto dread_kings = dread::core::create_dread_kings();
+dread_kings->register_king(
+	std::make_unique<dread::concurrency::DreadConcurrencyKing>());
 
 dread::core::ProblemContext problem{
 	.context_id = "candidate.cpp",
 	.raw_source_code = source,
 	.requested_standard = dread::core::CppStandard::Cpp23};
-const auto verdict = council->evaluate_all(problem);
+const auto verdict = dread_kings->evaluate_all(problem);
 ```
 
-Registered Lords run concurrently and their violations are aggregated. The
-concurrency Lord flags `memory_order_relaxed` stores when threaded source is
+Registered Dread Kings run concurrently and their violations are aggregated. The
+concurrency Dread King flags `memory_order_relaxed` stores when threaded source is
 present and reports a remediation plus ISO clause reference. This is a
 source-level heuristic, not a replacement for ThreadSanitizer or formal model
-checking. `dreadctl verify <file>` also performs an optional `clang++` syntax
+checking. `dread-kings verify <file>` also performs an optional `clang++` syntax
 check; set `DREAD_COMPILER` to a Clang or GCC executable to select another
-compiler. Missing external compilers are reported but do not hide Lord results.
+compiler. Missing external compilers are reported but do not hide Dread King results.
 
-## Rust agent council
+## Rust Dread Kings
 
-`rust-agents/` is a companion Rust crate that analyzes source files using
-concurrent agents. It demonstrates trait objects, iterator pipelines, `Box` to
+`rust-kings/` is a companion Rust crate that analyzes source files using
+concurrent Dread Kings. It demonstrates trait objects, iterator pipelines, `Box` to
 `Arc` ownership, shared `Arc<str>` context, mutex-protected metrics, Tokio
-blocking tasks, completion channels, and typed agent errors. Run it from the
+blocking tasks, completion channels, and typed Dread King errors. Run it from the
 crate directory:
 
 ```bash
 cargo test
-cargo run -- ../examples/dreadctl.cpp
+cargo run -- ../examples/dread_kings.cpp
 ```
 
 Domain failures use `thiserror`; the command-line boundary uses `anyhow` to add
-file context. `Rc<RefCell<T>>` is deliberately not used in the concurrent
-council: it is for single-threaded shared mutation, while these `Send + Sync`
-agents run across worker threads. The crate tests cover source findings,
+file context. `Rc<RefCell<T>>` is deliberately not used by the concurrent Dread Kings runner:
+it is for single-threaded shared mutation, while these `Send + Sync`
+Dread Kings run across worker threads. The crate tests cover source findings,
 duplicate registration, concurrent completion, metrics, and aggregated errors.
 
 ## Surgical rewrites

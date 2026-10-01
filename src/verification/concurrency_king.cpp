@@ -1,4 +1,4 @@
-#include "dreadlords/lords/concurrency_lord.hpp"
+#include "dread_kings/kings/concurrency_king.hpp"
 
 #include <chrono>
 #include <regex>
@@ -7,7 +7,7 @@
 namespace dread::concurrency {
 
 std::expected<core::VerificationVerdict, std::string>
-DreadConcurrencyLord::analyze(const core::ProblemContext& context) {
+DreadConcurrencyKing::analyze(const core::ProblemContext& context) {
   const auto start = std::chrono::steady_clock::now();
   core::VerificationVerdict verdict{.target_standard = context.requested_standard};
 

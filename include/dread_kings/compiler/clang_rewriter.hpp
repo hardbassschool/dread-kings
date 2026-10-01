@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dreadlords/core/dread_core.hpp"
+#include "dread_kings/core/dread_core.hpp"
 
 #include <cstdint>
 #include <expected>

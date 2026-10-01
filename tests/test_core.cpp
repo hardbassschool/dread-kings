@@ -1,5 +1,5 @@
-#include "dreadlords/discovery/search.hpp"
-#include "dreadlords/verification/verification.hpp"
+#include "dread_kings/discovery/search.hpp"
+#include "dread_kings/verification/verification.hpp"
 #include <cassert>
 #include <iostream>
 int main(){
@@ -9,5 +9,5 @@ int main(){
   assert(r.all.size()==2000);
   assert(!r.feasible.empty());
   assert(dread::verification::verify(r.feasible.front(),o).passed);
-  std::cout<<"All Dread Lords core tests passed.\n";
+  std::cout<<"All Dread Kings core tests passed.\n";
 }

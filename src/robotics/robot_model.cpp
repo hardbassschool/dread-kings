@@ -1,4 +1,4 @@
-#include "dreadlords/robotics/robot_model.hpp"
+#include "dread_kings/robotics/robot_model.hpp"
 #include <sstream>
 
 namespace dread::robotics {
