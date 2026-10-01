@@ -1,25 +1,55 @@
 # Dread Kings v3 — C++ Engineering & Robotics Discovery Engine
 
+> A C++23 and Rust toolkit for concurrent source analysis, async verification,
+> and robotics design-space search.
+
+[![CI](https://github.com/hardbassschool/dread-kings/actions/workflows/ci.yml/badge.svg)](https://github.com/hardbassschool/dread-kings/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-in_progress-lightgrey)](https://github.com/hardbassschool/dread-kings/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 This is a functional C++23 baseline for Dread Kings. It does not claim that generated candidates are physically validated inventions; it performs computational design-space search, evaluates declared constraints, verifies the computational contract, and emits a robot-model artifact.
 
-## Build
+The project combines systems Rust and modern C++ for concurrency, async task
+coordination, source-level verification, and robotics tooling. Its checks are
+heuristics and computational contract checks—not physical validation,
+ThreadSanitizer, or formal model checking.
+
+## Try it
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
-ctest --test-dir build --output-on-failure
 ./build/dread-kings
+ctest --test-dir build --output-on-failure
 ```
+
+Verify a C++ source file:
+
+```bash
+./build/dread-kings verify examples/dread_kings.cpp
+```
+
+Try the async Rust source analyzer from the crate directory:
+
+```bash
+cd rust-kings
+cargo test
+cargo run -- ../examples/dread_kings.cpp
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete build, lint, and test
+instructions.
 
 ## Architecture
 
-- `discovery/`: design vectors, candidate generation, search.
-- `robotics/`: robot model and SDF generation.
-- `verification/`: explicit feasibility contract.
-- `toolchain/`: compiler probing.
+- `src/discovery/` and `include/dread_kings/discovery/`: design vectors, candidate generation, and design-space search.
+- `src/robotics/` and `include/dread_kings/robotics/`: robot model and SDF generation.
+- `src/verification/` and `include/dread_kings/verification/`: feasibility contract and source-level concurrency checks.
+- `src/toolchain/` and `include/dread_kings/toolchain/`: compiler probing, invocation, and source rewrite utilities.
 - `core/`: shared Dread King, Dread Kings runner, problem-context, and verdict contracts.
-- `compiler/`: compiler checks and surgical source rewrite utilities.
-- `kings/`: specialized source analyzers, including concurrency checks.
+- `include/dread_kings/compiler/`: compiler checks and surgical source rewrite utilities.
+- `include/dread_kings/kings/`: specialized source analyzers.
+- `rust-kings/`: async, concurrent Rust source-analysis companion crate.
 - `knowledge/cppreference/`: reference-layer policy and entry points.
 
 ## Dread Kings pipeline
@@ -74,7 +104,7 @@ diff without writing the file. The current backend is dependency-free and
 preserves source bytes; installing LLVM/Clang libTooling is required before
 replacing it with a true AST traversal backend.
 
-## Next production integrations
+## What's next
 
 1. Replace the analytical evaluator with a Gazebo/MuJoCo adapter.
 2. Add ROS 2 transport/control nodes.
