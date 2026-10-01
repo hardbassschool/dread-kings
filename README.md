@@ -26,7 +26,7 @@ ctest --test-dir build --output-on-failure
 Verify a C++ source file:
 
 ```bash
-./build/dread-kings verify examples/dread_kings.cpp
+DREAD_COMPILER=c++ ./build/dread-kings verify examples/dread_kings.cpp
 ```
 
 Try the async Rust source analyzer from the crate directory:

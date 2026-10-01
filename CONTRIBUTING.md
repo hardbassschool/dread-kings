@@ -24,7 +24,7 @@ file:
 
 ```bash
 ./build/dread-kings
-./build/dread-kings verify examples/dread_kings.cpp
+DREAD_COMPILER=c++ ./build/dread-kings verify examples/dread_kings.cpp
 ```
 
 The companion Rust crate lives in `rust-kings/`. From that directory, run its
